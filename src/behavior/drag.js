@@ -11,7 +11,9 @@ d3.behavior.drag = function() {
   var event = d3_eventDispatch(drag, "drag", "dragstart", "dragend"),
       origin = null,
       mousedown = dragstart(d3_noop, d3.mouse, d3_window, "mousemove", "mouseup"),
-      touchstart = dragstart(d3_behavior_dragTouchId, d3.touch, d3_identity, "touchmove", "touchend");
+      touchstart = dragstart(d3_behavior_dragTouchId, d3.touch, d3_identity, "touchmove", "touchend"),
+      baseNode = function(target) { return target.parentNode; };
+
 
   function drag() {
     this.on("mousedown.drag", mousedown)
@@ -30,7 +32,7 @@ d3.behavior.drag = function() {
           dragOffset,
           dragSubject = d3.select(subject(target)).on(move + dragName, moved).on(end + dragName, ended),
           dragRestore = d3_event_dragSuppress(target),
-          position0 = position(parent, dragId);
+          position0 = position(baseNode(parent), dragId);
 
       if (origin) {
         dragOffset = origin.apply(that, arguments);
@@ -42,7 +44,7 @@ d3.behavior.drag = function() {
       dispatch({type: "dragstart"});
 
       function moved() {
-        var position1 = position(parent, dragId), dx, dy;
+        var position1 = position(baseNode(parent), dragId), dx, dy;
         if (!position1) return; // this touch didn’t move
 
         dx = position1[0] - position0[0];
@@ -60,7 +62,7 @@ d3.behavior.drag = function() {
       }
 
       function ended() {
-        if (!position(parent, dragId)) return; // this touch didn’t end
+        if (!position(baseNode(parent), dragId)) return; // this touch didn’t end
         dragSubject.on(move + dragName, null).on(end + dragName, null);
         dragRestore(dragged);
         dispatch({type: "dragend"});
@@ -71,6 +73,12 @@ d3.behavior.drag = function() {
   drag.origin = function(x) {
     if (!arguments.length) return origin;
     origin = x;
+    return drag;
+  };
+
+  drag.base = function(x) {
+    if (!arguments.length) return baseNode;
+    baseNode = x;
     return drag;
   };
 
