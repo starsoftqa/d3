@@ -1199,13 +1199,15 @@
     }
   };
   d3.behavior.drag = function() {
-    var event = d3_eventDispatch(drag, "drag", "dragstart", "dragend"), origin = null, mousedown = dragstart(d3_noop, d3.mouse, d3_window, "mousemove", "mouseup"), touchstart = dragstart(d3_behavior_dragTouchId, d3.touch, d3_identity, "touchmove", "touchend");
+    var event = d3_eventDispatch(drag, "drag", "dragstart", "dragend"), origin = null, mousedown = dragstart(d3_noop, d3.mouse, d3_window, "mousemove", "mouseup"), touchstart = dragstart(d3_behavior_dragTouchId, d3.touch, d3_identity, "touchmove", "touchend"), baseNode = function(target) {
+      return target.parentNode;
+    };
     function drag() {
       this.on("mousedown.drag", mousedown).on("touchstart.drag", touchstart);
     }
     function dragstart(id, position, subject, move, end) {
       return function() {
-        var that = this, target = d3.event.target, parent = that.parentNode, dispatch = event.of(that, arguments), dragged = 0, dragId = id(), dragName = ".drag" + (dragId == null ? "" : "-" + dragId), dragOffset, dragSubject = d3.select(subject(target)).on(move + dragName, moved).on(end + dragName, ended), dragRestore = d3_event_dragSuppress(target), position0 = position(parent, dragId);
+        var that = this, target = d3.event.target, parent = that.parentNode, dispatch = event.of(that, arguments), dragged = 0, dragId = id(), dragName = ".drag" + (dragId == null ? "" : "-" + dragId), dragOffset, dragSubject = d3.select(subject(target)).on(move + dragName, moved).on(end + dragName, ended), dragRestore = d3_event_dragSuppress(target), position0 = position(baseNode(parent), dragId);
         if (origin) {
           dragOffset = origin.apply(that, arguments);
           dragOffset = [ dragOffset.x - position0[0], dragOffset.y - position0[1] ];
@@ -1216,7 +1218,7 @@
           type: "dragstart"
         });
         function moved() {
-          var position1 = position(parent, dragId), dx, dy;
+          var position1 = position(baseNode(parent), dragId), dx, dy;
           if (!position1) return;
           dx = position1[0] - position0[0];
           dy = position1[1] - position0[1];
@@ -1231,7 +1233,7 @@
           });
         }
         function ended() {
-          if (!position(parent, dragId)) return;
+          if (!position(baseNode(parent), dragId)) return;
           dragSubject.on(move + dragName, null).on(end + dragName, null);
           dragRestore(dragged && d3.event.target === target);
           dispatch({
@@ -1243,6 +1245,11 @@
     drag.origin = function(x) {
       if (!arguments.length) return origin;
       origin = x;
+      return drag;
+    };
+    drag.base = function(x) {
+      if (!arguments.length) return baseNode;
+      baseNode = x;
       return drag;
     };
     return d3.rebind(drag, event, "on");
@@ -1698,9 +1705,8 @@
     return v < 16 ? "0" + Math.max(0, v).toString(16) : Math.min(255, v).toString(16);
   }
   function d3_rgb_parse(format, rgb, hsl) {
-    format = format.toLowerCase();
     var r = 0, g = 0, b = 0, m1, m2, color;
-    m1 = /([a-z]+)\((.*)\)/.exec(format);
+    m1 = /([a-z]+)\((.*)\)/.exec(format = format.toLowerCase());
     if (m1) {
       m2 = m1[2].split(",");
       switch (m1[1]) {
