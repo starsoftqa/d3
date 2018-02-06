@@ -5,7 +5,8 @@
   var d3_arraySlice = [].slice, d3_array = function(list) {
     return d3_arraySlice.call(list);
   };
-  var d3_document = window.document;
+  var d3_this_obj; try{ d3_this_obj = window; }catch(e){ d3_this_obj = this; }
+  var d3_document = d3_this_obj.document;
   function d3_documentElement(node) {
     return node && (node.ownerDocument || node.document || node).documentElement;
   }
@@ -30,7 +31,7 @@
     try {
       d3_document.createElement("DIV").style.setProperty("opacity", 0, "");
     } catch (error) {
-      var d3_element_prototype = window.Element.prototype, d3_element_setAttribute = d3_element_prototype.setAttribute, d3_element_setAttributeNS = d3_element_prototype.setAttributeNS, d3_style_prototype = window.CSSStyleDeclaration.prototype, d3_style_setProperty = d3_style_prototype.setProperty;
+      var d3_element_prototype = d3_this_obj.Element.prototype, d3_element_setAttribute = d3_element_prototype.setAttribute, d3_element_setAttributeNS = d3_element_prototype.setAttributeNS, d3_style_prototype = window.CSSStyleDeclaration.prototype, d3_style_setProperty = d3_style_prototype.setProperty;
       d3_element_prototype.setAttribute = function(name, value) {
         d3_element_setAttribute.call(this, name, value + "");
       };
@@ -1160,7 +1161,7 @@
   d3.mouse = function(container) {
     return d3_mousePoint(container, d3_eventSource());
   };
-  var d3_mouse_bug44083 = window.navigator && /WebKit/.test(window.navigator.userAgent) ? -1 : 0;
+  var d3_mouse_bug44083 = d3_this_obj.navigator && /WebKit/.test(d3_this_obj.navigator.userAgent) ? -1 : 0;
   function d3_mousePoint(container, e) {
     if (e.changedTouches) e = e.changedTouches[0];
     var svg = container.ownerSVGElement || container;
@@ -2121,7 +2122,7 @@
   };
   d3.csv = d3.dsv(",", "text/csv");
   d3.tsv = d3.dsv("	", "text/tab-separated-values");
-  var d3_timer_queueHead, d3_timer_queueTail, d3_timer_interval, d3_timer_timeout, d3_timer_active, d3_timer_frame = window[d3_vendorSymbol(window, "requestAnimationFrame")] || function(callback) {
+  var d3_timer_queueHead, d3_timer_queueTail, d3_timer_interval, d3_timer_timeout, d3_timer_active, d3_timer_frame = d3_this_obj[d3_vendorSymbol(d3_this_obj, "requestAnimationFrame")] || function(callback) {
     setTimeout(callback, 17);
   };
   d3.timer = function(callback, delay, then) {
@@ -9506,5 +9507,5 @@
     return request.responseXML;
   });
   if (typeof define === "function" && define.amd) define(d3); else if (typeof module === "object" && module.exports) module.exports = d3;
-  window.d3 = d3;
+  d3_this_obj.d3 = d3;
 }();
